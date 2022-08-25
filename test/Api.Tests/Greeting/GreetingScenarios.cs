@@ -1,4 +1,5 @@
-﻿using Api.Domain.Greetings;
+﻿using System.ComponentModel;
+using Api.Domain.Greetings;
 using LightBDD.Framework;
 using LightBDD.Framework.Scenarios;
 using LightBDD.XUnit2;
@@ -15,7 +16,8 @@ namespace Api.Domain.Tests.Greetings;
 public partial class GreetingScenarios : FeatureFixture
 {
     [Scenario]
-    public async Task User_should_get_a_greeting_on_their_birthday() =>
+    [MemberData(nameof(Data))]
+    public async Task User_should_get_a_greeting_on_their_birthday(int iteration) =>
         await Runner.RunScenarioAsync(
             _ => Given_the_user_has_their_birthday_today(),
             _ => When_creating_a_greeting_message(),
@@ -40,11 +42,20 @@ public partial class GreetingScenarios : FeatureFixture
             );
 }
 
+[Collection("InProcessServer")]
 public partial class GreetingScenarios
 {
+    private readonly InProcessServerFixture _fixture;
     private User _user;
     private string _greeting;
     private decimal _userSpend = 0;
+    
+    public static IEnumerable<object[]> Data => Enumerable.Range(1, 500).Select(x => new object[] { x });
+
+    public GreetingScenarios(InProcessServerFixture fixture)
+    {
+        _fixture = fixture;
+    }
     
     private Task Given_the_user_has_their_birthday_today()
     {
@@ -72,24 +83,15 @@ public partial class GreetingScenarios
 
     private async Task When_creating_a_greeting_message()
     {
-        var salesService = new FakeSalesService(_userSpend);
-        var application = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    services.AddSingleton<ISalesService>(salesService);
-                });
-            });
-
-        var client = application.CreateClient();
+        _fixture.SalesService.SetUserSpend(_userSpend);
+        
         var uri = QueryHelpers.AddQueryString("/Greeting", new Dictionary<string, string>
         {
             { "username", _user.Username },
             { "dateOfBirth", _user.DateOfBirth.ToString("O") }
         }!);
         
-        var response = await client.GetAsync(uri);
+        var response = await _fixture.Client.GetAsync(uri);
         _greeting = await response.Content.ReadAsStringAsync();
     }
 
@@ -122,4 +124,47 @@ public class FakeSalesService : ISalesService
     }
 
     public decimal GetUserSpend(User user) => userSpend;
+
+    public void SetUserSpend(decimal userSpend)
+    {
+        this.userSpend = userSpend;
+    }
+}
+
+[CollectionDefinition("InProcessServer")]
+public class InProcessServerCollection : ICollectionFixture<InProcessServerFixture>
+{
+    // This class has no code, and is never created. Its purpose is simply
+    // to be the place to apply [CollectionDefinition] and all the
+    // ICollectionFixture<> interfaces.
+}
+
+public class InProcessServerFixture : IDisposable
+{
+    private FakeSalesService _salesService;
+    private HttpClient _client;
+    
+    public InProcessServerFixture()
+    {
+        _salesService = new FakeSalesService(0);
+        var application = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddSingleton<ISalesService>(_salesService);
+                });
+            });
+
+        _client = application.CreateClient();
+    }
+
+    public FakeSalesService SalesService => _salesService;
+
+    public HttpClient Client => _client;
+    
+    public void Dispose()
+    {
+        _client.Dispose();
+    }
 }

@@ -9,6 +9,6 @@ services:
       - 5000:5000
 
   localstack:
-    image: localstack/localstack:0.11.2
+    image: localstack/localstack:1.0.4
     ports:
       - 4566:4566

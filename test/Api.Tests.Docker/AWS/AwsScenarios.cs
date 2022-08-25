@@ -1,8 +1,6 @@
 using System.Net;
-using Amazon.SQS;
 using Api.Tests.Docker;
 using LightBDD.Framework;
-using LightBDD.Framework.Parameters;
 using LightBDD.Framework.Scenarios;
 using LightBDD.XUnit2;
 
