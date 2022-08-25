@@ -11,3 +11,7 @@ to get a feel for the trade-offs of these approaches.
 - https://martinfowler.com/articles/2021-test-shapes.html
 - https://martinfowler.com/articles/microservice-testing/
 - https://engineering.atspotify.com/2018/01/testing-of-microservices/
+
+# Videos
+- https://www.youtube.com/watch?v=EZ05e7EMOLM
+- https://www.youtube.com/watch?v=vOO3hulIcsY
