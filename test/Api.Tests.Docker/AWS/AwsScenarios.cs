@@ -1,16 +1,23 @@
 using System.Net;
+using Amazon.SQS;
+using Api.Tests.Docker;
 using LightBDD.Framework;
+using LightBDD.Framework.Parameters;
 using LightBDD.Framework.Scenarios;
 using LightBDD.XUnit2;
+
+[assembly:LightBddScopeAttribute]
 
 namespace Api.Domain.Tests.Greetings;
 
 [FeatureDescription("AWS feature description")]
 [Label("TFPT-1234")]
+[Collection("Docker")]
 public partial class AwsScenarios : FeatureFixture
 {
     [Scenario]
-    public async Task AWSScenario() =>
+    [MemberData(nameof(Data))]
+    public async Task AWSScenario(int iteration) =>
         await Runner.RunScenarioAsync(
             _ => Given_a_message(),
             _ => When_publishing_message(),
@@ -25,10 +32,13 @@ public partial class AwsScenarios
     private string message;
     private static HttpClient client = new();
     private HttpResponseMessage response;
-    
-    private async Task Given_a_message()
+
+    public static IEnumerable<object[]> Data => Enumerable.Range(1, 500).Select(x => new object[] { x });
+
+    private Task Given_a_message()
     {
         message = "Message";
+        return Task.CompletedTask;
     }
 
     private async Task When_publishing_message()
@@ -50,4 +60,12 @@ public partial class AwsScenarios
     {
         Assert.Contains(message, await response.Content.ReadAsStringAsync());
     }
+}
+
+[CollectionDefinition("Docker")]
+public class DockerComposeCollection : ICollectionFixture<DockerComposeFixture>
+{
+    // This class has no code, and is never created. Its purpose is simply
+    // to be the place to apply [CollectionDefinition] and all the
+    // ICollectionFixture<> interfaces.
 }

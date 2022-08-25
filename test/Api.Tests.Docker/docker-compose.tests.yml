@@ -3,8 +3,8 @@ version: "3.3"
 services:    
   api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../../../../
+      dockerfile: src/Api/Dockerfile
     ports: 
       - 5000:5000
 
@@ -12,5 +12,3 @@ services:
     image: localstack/localstack:0.11.2
     ports:
       - 4566:4566
-    volumes:
-    - ./images/localstack/scripts:/docker-entrypoint-initaws.d
