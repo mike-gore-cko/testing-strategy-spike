@@ -31,3 +31,11 @@ public interface ISalesService
 {
     decimal GetUserSpend(User user);
 }
+
+public class RealSalesService : ISalesService
+{
+    public decimal GetUserSpend(User user)
+    {
+        return 0;
+    }
+}
