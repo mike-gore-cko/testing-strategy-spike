@@ -1,0 +1,28 @@
+version: "3.3"
+
+services:         
+  api:
+    container_name: lambda-invoker
+    environment:
+      - DOTNET_ENVIRONMENT=local
+      - ASPNETCORE_URLS=http://*:5000
+      - AWS_DEFAULT_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=xx
+      - AWS_SECRET_ACCESS_KEY=xx
+    expose:
+      - 5000
+    depends_on:
+      - localstack
+
+  localstack:
+    hostname: localstack
+    container_name: localstack
+    restart: always
+    expose:
+      - 4566
+    environment:
+      - SERVICES=sqs
+      - HOSTNAME=localstack
+      - AWS_DEFAULT_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=xx
+      - AWS_SECRET_ACCESS_KEY=xx
