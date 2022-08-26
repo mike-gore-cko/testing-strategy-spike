@@ -4,14 +4,17 @@ using Ductus.FluentDocker.Builders;
 using Ductus.FluentDocker.Services;
 using LightBDD.XUnit2;
 
+[assembly: DockerComposeSetup]
 
 namespace Api.Tests.Docker;
 
-public class DockerComposeFixture : IDisposable
+// This runs once across all tests - for Docker based setups this is preferred to an xUnit collection
+// because it'll allow test classes to run in parallel
+public class DockerComposeSetupAttribute : LightBddScopeAttribute
 {
     private ICompositeService dockerCompose;
 
-    public DockerComposeFixture()
+    protected override void OnSetUp()
     {
         var composeTests = Path.Combine(Directory.GetCurrentDirectory(), "docker-compose.tests.yml");
         var composeOverride = Path.Combine(Directory.GetCurrentDirectory(), "docker-compose.override.yml");
@@ -36,7 +39,7 @@ public class DockerComposeFixture : IDisposable
         sqsClient.CreateQueueAsync(queueName).Wait();
     }
 
-    public void Dispose()
+    protected override void OnTearDown()
     {
         dockerCompose.Stop();
         dockerCompose.Remove();

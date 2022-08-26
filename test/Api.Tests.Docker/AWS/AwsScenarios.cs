@@ -1,16 +1,39 @@
 using System.Net;
-using Api.Tests.Docker;
 using LightBDD.Framework;
 using LightBDD.Framework.Scenarios;
 using LightBDD.XUnit2;
 
-[assembly:LightBddScopeAttribute]
-
 namespace Api.Domain.Tests.Greetings;
+
+// Tests in a class or using the same collection do not run in parallel
+// The copies of the scenarios run in parallel, speeding things up
 
 [FeatureDescription("AWS feature description")]
 [Label("TFPT-1234")]
-[Collection("Docker")]
+public class AwsScenarios5 : AwsScenarios
+{
+}
+
+[FeatureDescription("AWS feature description")]
+[Label("TFPT-1234")]
+public class AwsScenarios4 : AwsScenarios
+{
+}
+
+[FeatureDescription("AWS feature description")]
+[Label("TFPT-1234")]
+public class AwsScenarios3 : AwsScenarios
+{
+}
+
+[FeatureDescription("AWS feature description")]
+[Label("TFPT-1234")]
+public class AwsScenarios2 : AwsScenarios
+{
+}
+
+[FeatureDescription("AWS feature description")]
+[Label("TFPT-1234")]
 public partial class AwsScenarios : FeatureFixture
 {
     [Scenario]
@@ -31,7 +54,7 @@ public partial class AwsScenarios
     private static HttpClient client = new();
     private HttpResponseMessage response;
 
-    public static IEnumerable<object[]> Data => Enumerable.Range(1, 500).Select(x => new object[] { x });
+    public static IEnumerable<object[]> Data => Enumerable.Range(1, 100).Select(x => new object[] { x });
 
     private Task Given_a_message()
     {
@@ -58,12 +81,4 @@ public partial class AwsScenarios
     {
         Assert.Contains(message, await response.Content.ReadAsStringAsync());
     }
-}
-
-[CollectionDefinition("Docker")]
-public class DockerComposeCollection : ICollectionFixture<DockerComposeFixture>
-{
-    // This class has no code, and is never created. Its purpose is simply
-    // to be the place to apply [CollectionDefinition] and all the
-    // ICollectionFixture<> interfaces.
 }
